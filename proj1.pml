@@ -22,8 +22,10 @@ byte array[N] = { 1, 2, 3, 4, 5 }
 bool wantP = false, wantQ = false;
 int turn = 0;
 
+
+/* Random Number Generator */
 active [N] proctype P(){
-	
+
 	byte nr;	/* pick random value  */
 	do
 	:: nr++		/* randomly increment */
@@ -38,12 +40,41 @@ active [N] proctype P(){
 	:: break	/* or stop            */
 	od;
 
-	byte i = nr % N; 
-	byte j = nr2 % N; 
+	byte i = nr % N;
+	byte j = nr2 % N;
 
 	/* Swap */
 	byte temp = array[i];
 	array[i] = array[j];
 	array[j] = temp;
 }
- 
+
+
+/* Semaphore Emulation */
+#define p	0
+#define v	1
+
+chan sema = [0] of { bit };
+
+proctype dijkstra()
+{	byte count = 1;
+
+	do
+	:: (count == 1) ->
+		sema!p; count = 0
+	:: (count == 0) ->
+		sema?v; count = 1
+	od
+}
+
+proctype user()
+{	do
+	:: sema?p;
+		printf("Critical %d\n", _pid)
+	   /*     critical section */
+	   sema!v;
+		printf("Non Criticial %d\n", _pid)
+	   /* non-critical section */
+	od
+}
+
