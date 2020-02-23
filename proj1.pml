@@ -1,80 +1,67 @@
-#define pInCS (P@CS)
-#define qInCS (Q@CS)
 
-#define pTrying	(P@TS)
-#define qTrying	(Q@TS)
-
-#define mutex (!(pInCS && qInCS))
-#define progress4P (pTrying -> <> pInCS)
-#define progress4Q (qTrying -> <> qInCS)
-
-#define Terminated (np_ == 0)
 
 #define N 5
+#define N_PROCS 3
 
-//ltl safety { [] mutex }
-//ltl progP { [] progress4P }
-//ltl progQ { [] progress4Q } 
-ltl term { <> Terminated }
+bool mutexes[N];
 
-byte array[N] = { 1, 2, 3, 4, 5 }
+chan channels = [N] of {byte};
 
-bool wantP = false, wantQ = false;
-int turn = 0;
+byte array[N];
 
+proctype RandomNumber() {
+    byte nr; // Pick random value
+    do
+    :: nr++ // randomly increment
+    :: nr-- // randomly decrement
+    :: break // Stop
+    od;
 
-/* Random Number Generator */
-active [N] proctype P(){
+    // Possible value
+    byte i = nr % N;
 
-	byte nr;	/* pick random value  */
-	do
-	:: nr++		/* randomly increment */
-	:: nr--		/* or decrement       */
-	:: break	/* or stop            */
-	od;
+    // Send back to swapper
 
-	byte nr2;	/* pick random value  */
-	do
-	:: nr2++	/* randomly increment */
-	:: nr2--	/* or decrement       */
-	:: break	/* or stop            */
-	od;
-
-	byte i = nr % N;
-	byte j = nr2 % N;
-
-	/* Swap */
-	byte temp = array[i];
-	array[i] = array[j];
-	array[j] = temp;
 }
 
+/*
+ * TODO: RNG will probably be a hell of a lot easier just copy and pasting in,
+ *       functioning it in, seems to just cause dumb headaches.
+ */
 
-/* Semaphore Emulation */
-#define p	0
-#define v	1
 
-chan sema = [0] of { bit };
+proctype Swapper() {
+    // Decide position 1 to swap
+    /* RNG */
+    // Check lock for position 1
+    // If no lock acquire
 
-proctype dijkstra()
-{	byte count = 1;
+    // Decide position 2 to swap
+    /* RNG */
+    // Check lock for position 2
+    // If no lock acquire
 
-	do
-	:: (count == 1) ->
-		sema!p; count = 0
-	:: (count == 0) ->
-		sema?v; count = 1
-	od
+    // Swap Position 1 and Position 2
+
+    // Release Position 1 and 2 locks
+    // Exit
+    printf("pid: %d\n", _pid);
 }
 
-proctype user()
-{	do
-	:: sema?p;
-		printf("Critical %d\n", _pid)
-	   /*     critical section */
-	   sema!v;
-		printf("Non Criticial %d\n", _pid)
-	   /* non-critical section */
-	od
+init {
+    byte i;
+    // Init mutexes
+    for (i : 0 .. (N - 1)) {
+        mutexes[i] = false;
+    }
+    // Init Array
+    for (i : 0 .. (N - 1)) {
+        array[i] = i;
+    }
+    // Launch processes N times
+    atomic {
+        for (i : 1 .. N_PROCS) {
+            run Swapper ();
+        }
+    }
 }
-
