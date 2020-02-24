@@ -1,3 +1,15 @@
+/*
+* CS4710: Model-Driven Software Development, Spring 2020
+* Computer Science Department Michigan Technological University
+*
+* Assignment: SPIN Group Assignment #1: Parallel Swap
+* 
+* Authors: Tyler Marenger
+*		   James Helm
+*
+* Due Date: 2/25/20
+*/
+
 #include "for.h"
 
 #define pInCS (P@CS)
@@ -17,7 +29,7 @@
 
 #define Terminated (np_ == 0)
 
-//ltl safety { [] mutex }
+ltl safety { [] mutex }
 //ltl safety { ![] mutex }
 
 //ltl progP { [] progress4P }
@@ -25,11 +37,11 @@
 
 //ltl term { <> Terminated }
 
-ltl concurrency { [] swapOccursConcur} /* Want to fail */
+//ltl concurrency { [] swapOccursConcur} /* Want to fail */
 
 //ltl successfulSwap { [] (Terminated -> distinctNumbers) && <> Terminated }
 
-#define N 3
+#define N 5
 
 byte array[N]; /* Number array */
 int distinct[N];
@@ -44,39 +56,52 @@ proctype swapProcess(int i; int j){
 	atomic {
 	do
 	:: turn != 0 
-	::	
-			/* Checks if the index is locked */
-			if 
-			:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
+	::	/* Checks if the index is locked */
+		if 
+		:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
 				turn = 1;
 
 				/* Lock index */
 				arrayIndexLocks[i] = 0;
 				arrayIndexLocks[j] = 0;
  				
+				if
+				:: (i == j) -> 
+						procCount[i]++;
+						goto SKIP;
+				fi;
+
 				/* Process in critical section */
-				procCount[i]=1; 
-				procCount[j]=1;
+				procCount[i]++; 
+				procCount[j]++;
 				
+    			SKIP:
+
 				turn = 0;
 			
-				/* Check that only one process is in critical section */
-				assert(procCount[i] <= 1 && procCount[j] <=1);
+				if
+				:: (i != j) ->
+						/* Check that only one process is in critical section */
+						assert(procCount[i] <= 1 && procCount[j] <=1);
+				fi;
 
 				break;
-			:: else -> 
+		:: else -> 
 					turn = 1;
 					printf("arrayIndexLocks[%d] or arrayIndexLocks[%d] is being used\n", i, j);
 					turn = 0;
-			fi;
-		
+		fi;
 	od;
 	}
+
 	/* -------- Critical Section -------- */
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
 
-    assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
+	if
+	:: (i != j) ->
+			assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
+	fi;
 	
     printf("Proc(%d) swapping array[%d] = %d and array[%d] = %d\n", _pid, i, array[i], j, array[j]);
 
@@ -91,12 +116,15 @@ proctype swapProcess(int i; int j){
 	   arrayIndexLocks[i] = 1; arrayIndexLocks[j] = 1; 
 	   
 	   /* Process in critical section */
-	   procCount[i]=0; 
-	   procCount[j]=0;
+	   procCount[i]--; 
+	   procCount[j]--;
 	
 	   concurrentCount--;
 
-	   assert(procCount[i] <= 1 && procCount[j] <=1);
+	    if
+		:: (i != j) ->
+				assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
+		fi;
 	}
 }
 
@@ -124,20 +152,4 @@ init {
 		run swapProcess(x, y);
 
 	rof (x)
-
-	/* Blocks (Ensures 1 process running) */
-	// _nr_pr == 1;
-	// assert(_nr_pr == 1);
-
-	printf("Swap Complete\n");
-
-	/* for(int x = 0; x < N-1; x++) */
-	// for (z, 0, N-1)
-
-	// 	distinct[array[z]] = distinct[array[z]] + 1;
-		
-	// 	/* Ensure distinct elements in array (ie. 1, 2, 3, 4, 5 | NOT 1, 1, 2, 3, 4, etc.) */
-	// 	assert(distinct[array[z]] == 1); 
-
-	// rof (z)
 }
