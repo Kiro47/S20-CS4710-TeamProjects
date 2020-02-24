@@ -15,15 +15,15 @@
 #define progress4P (pTrying -> <> pInCS)
 #define progress4Q (qTrying -> <> qInCS)
 
-#define Terminated (_nr_pr == 0)
+#define Terminated (np_ == 0)
 
-//ltl safety { [] mutex }
+ltl safety { [] mutex }
 //ltl safety { ![] mutex }
 
 //ltl progP { [] progress4P }
 //ltl progQ { [] progress4Q } 
 
-ltl term { <> Terminated }
+//ltl term { <> Terminated }
 
 //ltl concurrency { [] !swapOccursConcur} /* Want to fail */
 
@@ -39,11 +39,10 @@ int turn = 0; /* Proccess turn */
 int concurrentCount = 0;
 
 proctype swapProcess(int i; int j){
-	
+	end:
 	/* -------- Entry (Lock) -------- */
 	do
-	:: 
-		atomic {
+	:: atomic {
 			/* Checks if the index is locked */
 			if 
 			:: arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && turn == 0 && procCount[i] == 0 && procCount[j] == 0 ->
@@ -67,6 +66,7 @@ proctype swapProcess(int i; int j){
 					turn = 1;
 					printf("arrayIndexLocks[%d] or arrayIndexLocks[%d] is being used\n", i, j);
 					turn = 0;
+					break;
 			fi;
 		}
 	od;
@@ -83,8 +83,6 @@ proctype swapProcess(int i; int j){
     int temp = array[i];
     array[i] = array[j];
     array[j] = temp;
-	
-	
     /* -------- Critical Section -------- */
 
 	/* -------- Exit (Unlock Array Indices) -------- */
@@ -99,6 +97,7 @@ proctype swapProcess(int i; int j){
 
 	   assert(procCount[i] <= 1 && procCount[j] <=1);
 	}
+	
 }
 
 init {
