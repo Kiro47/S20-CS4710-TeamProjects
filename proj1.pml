@@ -19,7 +19,7 @@
 #define qTrying	(Q@TS)
 
 //#define mutex (!(pInCS && qInCS))
-#define mutex ((procCount[0] <= 1) && (procCount[1] <= 1) && (procCount[2] <= 1) && (procCount[3] <= 1) && (procCount[4] <= 1))
+#define mutex ((procCount[0] <= 1) && (procCount[1] <= 1) && (procCount[2] <= 1) && (procCount[3] <= 1))
 #define distinctNumbers (array[0] != array[1] && array[1] != array[2] && array[0] != array[2] )
 #define swapOccursConcur (concurrentCount <= 1)
 #define noneZeroArrayElements (array[0] != 0 && array[1] != 0 && array[2] != 0)
@@ -41,7 +41,7 @@ ltl safety { [] mutex }
 
 //ltl successfulSwap { [] (Terminated -> distinctNumbers) && <> Terminated }
 
-#define N 5
+#define N 4
 
 byte array[N]; /* Number array */
 int distinct[N];
@@ -55,7 +55,6 @@ proctype swapProcess(int i; int j){
 	/* -------- Entry (Lock) -------- */
 	atomic {
 	do
-	:: turn != 0 
 	::	/* Checks if the index is locked */
 		if 
 		:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
@@ -64,26 +63,19 @@ proctype swapProcess(int i; int j){
 				/* Lock index */
 				arrayIndexLocks[i] = 0;
 				arrayIndexLocks[j] = 0;
- 				
-				if
-				:: (i == j) -> 
-						procCount[i]++;
-						goto SKIP;
-				fi;
 
 				/* Process in critical section */
 				procCount[i]++; 
+				if
+				:: (i==j)->procCount[i]--; /* For mutual exclusion assertion */
+				fi;
 				procCount[j]++;
-				
-    			SKIP:
+			
 
 				turn = 0;
-			
-				if
-				:: (i != j) ->
-						/* Check that only one process is in critical section */
-						assert(procCount[i] <= 1 && procCount[j] <=1);
-				fi;
+
+				/* Check that only one process is in critical section */
+				assert(procCount[i] <= 1 && procCount[j] <= 1);
 
 				break;
 		:: else -> 
@@ -98,10 +90,7 @@ proctype swapProcess(int i; int j){
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
 
-	if
-	:: (i != j) ->
-			assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
-	fi;
+	assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
 	
     printf("Proc(%d) swapping array[%d] = %d and array[%d] = %d\n", _pid, i, array[i], j, array[j]);
 
@@ -117,14 +106,14 @@ proctype swapProcess(int i; int j){
 	   
 	   /* Process in critical section */
 	   procCount[i]--; 
+	   if
+       :: (i==j)->procCount[i]++; /* For mutual exclusion assertion */
+	   fi;
 	   procCount[j]--;
 	
 	   concurrentCount--;
 
-	    if
-		:: (i != j) ->
-				assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
-		fi;
+	   assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
 	}
 }
 

@@ -64,7 +64,6 @@ int j;
 	/* -------- Entry (Lock) -------- */
 	atomic {
 	do
-	:: turn != 0 
 	::	/* Checks if the index is locked */
 		if 
 		:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
@@ -73,26 +72,19 @@ int j;
 				/* Lock index */
 				arrayIndexLocks[i] = 0;
 				arrayIndexLocks[j] = 0;
- 				
-				if
-				:: (i == j) -> 
-						procCount[i]++;
-						goto SKIP;
-				fi;
 
 				/* Process in critical section */
 				procCount[i]++; 
+				if
+				:: (i==j)->procCount[i]--; /* For mutual exclusion assertion */
+				fi;
 				procCount[j]++;
-				
-    			SKIP:
+			
 
 				turn = 0;
-			
-				if
-				:: (i != j) ->
-						/* Check that only one process is in critical section */
-						assert(procCount[i] <= 1 && procCount[j] <=1);
-				fi;
+
+				/* Check that only one process is in critical section */
+				assert(procCount[i] <= 1 && procCount[j] <= 1);
 
 				break;
 		:: else -> 
@@ -107,10 +99,7 @@ int j;
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
 
-	if
-	:: (i != j) ->
-			assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
-	fi;
+	assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
 	
     printf("Proc(%d) swapping array[%d] = %d and array[%d] = %d\n", _pid, i, array[i], j, array[j]);
 
@@ -126,14 +115,14 @@ int j;
 	   
 	   /* Process in critical section */
 	   procCount[i]--; 
+	   if
+       :: (i==j)->procCount[i]++; /* For mutual exclusion assertion */
+	   fi;
 	   procCount[j]--;
 	
 	   concurrentCount--;
 
-	    if
-		:: (i != j) ->
-				assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
-		fi;
+	   assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
 	}
     progress: goto NTS;
 }
