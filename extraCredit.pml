@@ -49,14 +49,14 @@ byte arrayIndexLocks[N]; /* Index lock array */
 byte procCount[N]; /* Process at index count array */
 int turn = 0; /* Proccess turn */
 int concurrentCount = 0;
-int j;
 
-[N] proctype swapProcess(){
+proctype swapProcess(){
     
-    int i = _pid;
-    
-    NTS: printf("Entering noncritical section\n");
-    
+	NTS: printf("Entering noncritical section\n");
+
+    int i = _pid - 1;
+    int j;
+
     /* Random Number Generator */
 	/* Choose value between 0 and N-1 and stores in j */
     select(j : 0  ..  (N-1));
@@ -66,7 +66,7 @@ int j;
 	do
 	::	/* Checks if the index is locked */
 		if 
-		:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
+		:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 && i != j->
 				turn = 1;
 
 				/* Lock index */
@@ -74,24 +74,24 @@ int j;
 				arrayIndexLocks[j] = 0;
 
 				/* Process in critical section */
-				procCount[i]++; 
-				if
-				:: (i==j)->procCount[i]--; /* For mutual exclusion assertion */
-				fi;
-				procCount[j]++;
-			
-
+				procCount[i]=1; 
+				procCount[j]=1;
+		
 				turn = 0;
 
 				/* Check that only one process is in critical section */
 				assert(procCount[i] <= 1 && procCount[j] <= 1);
 
 				break;
-		:: else -> 
+		else -> 
 					turn = 1;
 					printf("arrayIndexLocks[%d] or arrayIndexLocks[%d] is being used\n", i, j);
 					turn = 0;
-		fi;
+					if
+					:: (i == j && i < N-2) -> j = i+1;
+					:: (i == j && i > 1) -> j = i-1;
+					fi
+		fi
 	od;
 	}
 
@@ -99,7 +99,7 @@ int j;
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
 
-	assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
+	assert(procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
 	
     printf("Proc(%d) swapping array[%d] = %d and array[%d] = %d\n", _pid, i, array[i], j, array[j]);
 
@@ -114,15 +114,12 @@ int j;
 	   arrayIndexLocks[i] = 1; arrayIndexLocks[j] = 1; 
 	   
 	   /* Process in critical section */
-	   procCount[i]--; 
-	   if
-       :: (i==j)->procCount[i]++; /* For mutual exclusion assertion */
-	   fi;
-	   procCount[j]--;
+  	   procCount[i]=0; 
+	   procCount[j]=0;
 	
 	   concurrentCount--;
 
-	   assert(procCount[i] <= 1 && procCount[j] <=1); /* Ensure mutual exclusion */
+	   assert(procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
 	}
     progress: goto NTS;
 }
@@ -138,5 +135,10 @@ init {
 
 	rof (k)
 
-    run swapProcess();
+    /* for(int x = 0; x < N-1; x++) */
+	for (x, 0, N-1)
+
+		run swapProcess();
+
+	rof (x)
 }

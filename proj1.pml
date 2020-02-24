@@ -68,13 +68,13 @@ proctype swapProcess(int i; int j){
 				arrayIndexLocks[j] = 0;
 
 				/* Process in critical section */
-				procCount[i]=1; 
-				procCount[j]=1;
+				procCount[i]++; 
+				procCount[j]++;
 		
 				turn = 0;
 
 				/* Check that only one process is in critical section */
-				assert(i == j || procCount[i] <= 1 && procCount[j] <= 1);
+				assert(procCount[i] <= 1 && procCount[j] <= 1);
 
 				break;
 		else -> 
@@ -93,7 +93,7 @@ proctype swapProcess(int i; int j){
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
 
-	assert(i == j || procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
+	assert(procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
 	
     printf("Proc(%d) swapping array[%d] = %d and array[%d] = %d\n", _pid, i, array[i], j, array[j]);
 
@@ -108,12 +108,12 @@ proctype swapProcess(int i; int j){
 	   arrayIndexLocks[i] = 1; arrayIndexLocks[j] = 1; 
 	   
 	   /* Process in critical section */
-  	   procCount[i]=0; 
-	   procCount[j]=0;
+  	   procCount[i]--; 
+	   procCount[j]--;
 	
 	   concurrentCount--;
 
-	   assert(i == j ||procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
+	   assert(procCount[i] <= 1 && procCount[j] <= 1); /* Ensure mutual exclusion */
 	}
 }
 
