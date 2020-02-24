@@ -9,7 +9,7 @@
 //#define mutex (!(pInCS && qInCS))
 #define mutex ((procCount[0] <= 1) && (procCount[1] <= 1) && (procCount[2] <= 1) && (procCount[3] <= 1) && (procCount[4] <= 1))
 #define distinctNumbers (array[0] != array[1] && array[1] != array[2] && array[0] != array[2] )
-#define swapOccursConcur (concurrentCount > 1)
+#define swapOccursConcur (concurrentCount <= 1)
 #define noneZeroArrayElements (array[0] != 0 && array[1] != 0 && array[2] != 0)
 
 #define progress4P (pTrying -> <> pInCS)
@@ -17,7 +17,7 @@
 
 #define Terminated (np_ == 0)
 
-ltl safety { [] mutex }
+//ltl safety { [] mutex }
 //ltl safety { ![] mutex }
 
 //ltl progP { [] progress4P }
@@ -25,11 +25,11 @@ ltl safety { [] mutex }
 
 //ltl term { <> Terminated }
 
-//ltl concurrency { [] !swapOccursConcur} /* Want to fail */
+ltl concurrency { [] swapOccursConcur} /* Want to fail */
 
-//ltl successfulSwap { [] (noneZeroArrayElements -> distinctNumbers) }
+//ltl successfulSwap { [] (Terminated -> distinctNumbers) && <> Terminated }
 
-#define N 5
+#define N 3
 
 byte array[N]; /* Number array */
 int distinct[N];
@@ -39,13 +39,15 @@ int turn = 0; /* Proccess turn */
 int concurrentCount = 0;
 
 proctype swapProcess(int i; int j){
-	end:
+	
 	/* -------- Entry (Lock) -------- */
+	atomic {
 	do
-	:: atomic {
+	:: turn != 0 
+	::	
 			/* Checks if the index is locked */
 			if 
-			:: arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && turn == 0 && procCount[i] == 0 && procCount[j] == 0 ->
+			:: turn == 0 && arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && procCount[i] == 0 && procCount[j] == 0 ->
 				turn = 1;
 
 				/* Lock index */
@@ -66,11 +68,10 @@ proctype swapProcess(int i; int j){
 					turn = 1;
 					printf("arrayIndexLocks[%d] or arrayIndexLocks[%d] is being used\n", i, j);
 					turn = 0;
-					break;
 			fi;
-		}
+		
 	od;
-
+	}
 	/* -------- Critical Section -------- */
     printf("Proc(%d) has entered the critical section\n", _pid);
 	concurrentCount++;
@@ -97,7 +98,6 @@ proctype swapProcess(int i; int j){
 
 	   assert(procCount[i] <= 1 && procCount[j] <=1);
 	}
-	
 }
 
 init {
@@ -115,8 +115,6 @@ init {
 
 	/* for(int x = 0; x < N-1; x++) */
 	for (x, 0, N-1)
-
-		
 
 		/* Random Number Generator */
 		/* Choose value between 0 and N-1 and stores in j */
