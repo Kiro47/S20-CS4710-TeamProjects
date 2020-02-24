@@ -8,21 +8,26 @@
 
 //#define mutex (!(pInCS && qInCS))
 #define mutex ((procCount[0] <= 1) && (procCount[1] <= 1) && (procCount[2] <= 1) && (procCount[3] <= 1) && (procCount[4] <= 1))
-#define swapOccursConcur (concurrentCount > 1);
+#define distinctNumbers (array[0] != array[1] && array[1] != array[2] && array[0] != array[2] )
+#define swapOccursConcur (concurrentCount > 1)
+#define noneZeroArrayElements (array[0] != 0 && array[1] != 0 && array[2] != 0)
+
 #define progress4P (pTrying -> <> pInCS)
 #define progress4Q (qTrying -> <> qInCS)
 
 #define Terminated (_nr_pr == 0)
 
-ltl safety { [] mutex }
+//ltl safety { [] mutex }
 //ltl safety { ![] mutex }
 
 //ltl progP { [] progress4P }
 //ltl progQ { [] progress4Q } 
 
-//ltl term { <> Terminated }
+ltl term { <> Terminated }
 
 //ltl concurrency { [] !swapOccursConcur} /* Want to fail */
+
+//ltl successfulSwap { [] (noneZeroArrayElements -> distinctNumbers) }
 
 #define N 5
 
@@ -33,7 +38,7 @@ byte procCount[N]; /* Process at index count array */
 int turn = 0; /* Proccess turn */
 int concurrentCount = 0;
 
-active proctype swapProcess(int i; int j){
+proctype swapProcess(int i; int j){
 	
 	/* -------- Entry (Lock) -------- */
 	do
@@ -41,7 +46,7 @@ active proctype swapProcess(int i; int j){
 		atomic {
 			/* Checks if the index is locked */
 			if 
-			:: arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && turn == 0 && procCount[i] == 0 && procCount[j] == 0 && i!= j->
+			:: arrayIndexLocks[i] == 1 && arrayIndexLocks[j] == 1 && turn == 0 && procCount[i] == 0 && procCount[j] == 0 ->
 				turn = 1;
 
 				/* Lock index */
@@ -59,9 +64,6 @@ active proctype swapProcess(int i; int j){
 
 				break;
 			:: else -> 
-					if
-					:: (i == j) -> select(j : 0  ..  N-1); break;
-					fi;
 					turn = 1;
 					printf("arrayIndexLocks[%d] or arrayIndexLocks[%d] is being used\n", i, j);
 					turn = 0;
@@ -119,26 +121,26 @@ init {
 
 		/* Random Number Generator */
 		/* Choose value between 0 and N-1 and stores in j */
-        select(y : 0  ..  N-1);
+        select(y : 0  ..  (N-1));
 		
-		/* i will be pid */
+		/* x will be pid */
 		run swapProcess(x, y);
 
 	rof (x)
 
-	/* Blocks -- Ensures 1 process running */
-	_nr_pr == 1;
-	assert(_nr_pr == 1);
+	/* Blocks (Ensures 1 process running) */
+	// _nr_pr == 1;
+	// assert(_nr_pr == 1);
 
-	printf("Swaps Done\n");
+	printf("Swap Complete\n");
 
 	/* for(int x = 0; x < N-1; x++) */
-	for (z, 0, N-1)
+	// for (z, 0, N-1)
 
-		distinct[array[z]] = distinct[array[z]] + 1;
+	// 	distinct[array[z]] = distinct[array[z]] + 1;
 		
-		/* Ensure distinct elements in array (ie. 1, 2, 3, 4, 5 | NOT 1, 1, 2, 3, 4, etc.) */
-		assert(distinct[array[z]] == 1); 
+	// 	/* Ensure distinct elements in array (ie. 1, 2, 3, 4, 5 | NOT 1, 1, 2, 3, 4, etc.) */
+	// 	assert(distinct[array[z]] == 1); 
 
-	rof (z)
+	// rof (z)
 }
