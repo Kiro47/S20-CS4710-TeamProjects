@@ -29,6 +29,40 @@ byte cards[PLAYERS * N_CARDS];
 #define CARDS(player, card_index) cards[(player) * N_CARDS + (card_index)]
 #define IS_VALID_CARD(player, card_index) ((player) >= 0 && (card_index) >= 0 && (player) < PLAYERS && (card_index) < N_CARDS)
 
+int round = 0;
+
+// Swap two card indicies of the players
+inline swap(player,first_card, second_card) {
+    assert(IS_VALID_CARD(player, first_card))
+    assert(IS_VALID_CARD(player, second_card))
+    int temp = CARDS(player, first_card); // set temp
+    CARDS(player, first_card) = CARDS(player, second_card); // replace 1 with 2
+    CARDS(player, second_card) = temp; // replace 2 with temp
+}
+
+// Shuffles all of the players card decks
+inline shuffleDeck(player) {
+    byte numbersOfShuffles;
+
+    // 127 => Max byte
+    select(numberOfShuffles: 0..127)
+
+    // Iterate over each player
+    for (player, 0, PLAYERS - 1)
+        // number of shuffles per player
+        for (timeShuffle, 0, numberOfShuffles - 1)
+            // Get two shuffle indexes
+            byte card1;
+            byte card2;
+            // Select two values to shuffle
+            // they could be the same value,but do we really care?
+            select(card1, 0 .. N_CARDS);
+            select(card2, 0 .. N_CARDS);
+            // Swaps the cards
+            swap(player, card1, card2);
+        rof (timeShuffle)
+    rof (player)
+}
 
 proctype Player(){
     printf("player %d\n)", _pid);
