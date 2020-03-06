@@ -19,7 +19,7 @@
 #define N_CARDS 4
 
 //ltl term { <> Terminated }
-ltl minPlayers { [] (PLAYERS > 3) }
+ltl minPlayers { <> (PLAYERS > 3) }
 
 
 // Cards "2d" array
