@@ -29,7 +29,6 @@ byte cards[PLAYERS * N_CARDS];
 #define CARDS(player, card_index) cards[(player) * N_CARDS + (card_index)]
 #define IS_VALID_CARD(player, card_index) ((player) >= 0 && (card_index) >= 0 && (player) < PLAYERS && (card_index) < N_CARDS)
 
-int round = 0;
 
 // Swap two card indicies of the players
 inline swap(player,first_card, second_card) {
@@ -41,14 +40,14 @@ inline swap(player,first_card, second_card) {
 }
 
 // Shuffles all of the players card decks
-inline shuffleDeck(player) {
-    byte numbersOfShuffles;
+inline shuffleDecks() {
+    int numberOfShuffles = 0;
 
     // 127 => Max byte
-    select(numberOfShuffles: 0..127)
+    select(numberOfShuffles :  0..3);
 
     // Iterate over each player
-    for (player, 0, PLAYERS - 1)
+    for (playerID, 0, PLAYERS - 1)
         // number of shuffles per player
         for (timeShuffle, 0, numberOfShuffles - 1)
             // Get two shuffle indexes
@@ -56,12 +55,12 @@ inline shuffleDeck(player) {
             byte card2;
             // Select two values to shuffle
             // they could be the same value,but do we really care?
-            select(card1, 0 .. N_CARDS);
-            select(card2, 0 .. N_CARDS);
+            select(card1: 0 .. (N_CARDS - 1));
+            select(card2: 0 .. (N_CARDS - 1));
             // Swaps the cards
-            swap(player, card1, card2);
+            swap(playerID, card1, card2);
         rof (timeShuffle)
-    rof (player)
+    rof (playerID)
 }
 
 proctype Player(){
@@ -77,11 +76,10 @@ init {
     int cardValue
     for (player, 0, (PLAYERS - 1))
         for (cardIndex, 0, (N_CARDS - 1))
-            // This select statement is filling them, but not in the way we want
-            // we'll need to figure out how to select population values better
-            select(cardValue : 0 .. (N_CARDS - 1));
             assert(IS_VALID_CARD(player, cardIndex));
-            CARDS(player,cardIndex) = cardValue;
+            CARDS(player,cardIndex) = cardIndex;
         rof (cardIndex)
     rof (player)
+    // Shuffle decks
+    atomic{ shuffleDecks() }
 }
