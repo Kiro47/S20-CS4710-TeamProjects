@@ -64,8 +64,8 @@ inline shuffleDecks() {
     rof (playerID)
 }
 
-proctype Player(){
-    printf("player %d\n)", _pid);
+proctype Player(int player_ID){
+    printf("player ID %d\n)", player_ID);
 }
 
 proctype Owner() {
@@ -104,4 +104,12 @@ init {
     rof (player)
     // Shuffle decks
     atomic{ shuffleDecks() }
+
+    // Start Owner and players
+    atomic {
+        run Owner();
+        for (player_ID, 0, (PLAYERS - 1))
+            run Player(player_ID);
+        rof (player_ID)
+    }
 }
