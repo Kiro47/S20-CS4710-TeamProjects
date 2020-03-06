@@ -45,7 +45,7 @@ inline shuffleDecks() {
     int numberOfShuffles = 0;
 
     // 127 => Max byte
-    select(numberOfShuffles :  0..3);
+    select(numberOfShuffles :  1..127);
 
     // Iterate over each player
     for (playerID, 0, PLAYERS - 1)
