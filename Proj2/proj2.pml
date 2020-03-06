@@ -17,6 +17,7 @@
 #define K 4
 #define PLAYERS  K
 #define N_CARDS 4
+#define SHUFFLE_CHANCE 50 // 50% chance to shuffle
 
 //ltl term { <> Terminated }
 ltl minPlayers { <> (PLAYERS > 3) }
@@ -69,6 +70,27 @@ proctype Player(){
 
 proctype Owner() {
     printf("owner %d\n", _pid);
+    byte shuffles = 0;
+    byte selected;
+
+    /*
+    Selects pick the % chance to perform a shuffle
+    up to a maximum of number of shuffles 127 (max byte size)
+    */
+    select(selected: 1..100);
+
+    if
+    :: shuffles < 127 -> // As long as we haven't hit max number of shuffles
+        if
+        :: selected >= SHUFFLE_CHANCE ->
+            // Shuffle the decks
+            atomic{shuffleDecks();}
+            // Increment counter for finiteness
+            shuffles = shuffles + 1;
+            select(selected: 1..100);
+        :: else -> select(selected: 1..100);
+        fi
+    fi
 }
 
 init {
