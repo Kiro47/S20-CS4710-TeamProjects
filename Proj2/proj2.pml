@@ -30,7 +30,6 @@ byte cards[PLAYERS * N_CARDS];
 #define CARDS(player, card_index) cards[(player) * N_CARDS + (card_index)]
 #define IS_VALID_CARD(player, card_index) ((player) >= 0 && (card_index) >= 0 && (player) < PLAYERS && (card_index) < N_CARDS)
 
-
 // Swap two card indicies of the players
 inline swap(player,first_card, second_card) {
     assert(IS_VALID_CARD(player, first_card))
@@ -65,7 +64,27 @@ inline shuffleDecks() {
 }
 
 proctype Player(int player_ID){
-    printf("player ID %d\n)", player_ID);
+    // Print player ID
+    printf("player ID %d\n", player_ID);
+
+    // Get and print left player's card
+    byte LEFT_PLAYER_CARD = -1;
+    if
+    :: (player_ID == 0) -> LEFT_PLAYER_CARD = CARDS((PLAYERS - 1), 0); // Edge case for wrap around
+    :: else -> LEFT_PLAYER_CARD = CARDS((player_ID -1), 0);
+    fi
+    printf("Player(%d): left card: %d\n",player_ID, LEFT_PLAYER_CARD );
+
+    // Get and print right players card
+    byte RIGHT_PLAYER_CARD = -1;
+    if
+    :: (player_ID == (PLAYERS-1)) -> RIGHT_PLAYER_CARD = CARDS(0, 0);
+    :: else -> RIGHT_PLAYER_CARD = CARDS((player_ID + 1), 0);
+    fi
+    printf("Player(%d): right card: %d\n",player_ID, RIGHT_PLAYER_CARD );
+
+    // Perform decision making stuff
+
 }
 
 proctype Owner() {
