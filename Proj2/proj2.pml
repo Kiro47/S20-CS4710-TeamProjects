@@ -108,13 +108,19 @@ proctype Player(int player_ID){
                 swap(player_ID, 0, (N_CARDS - 1));
             }
             checkHold = 0;
-        :: CARDS(LEFT_PLAYER,0) > CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) > CARDS(player_ID, 0) ->
+        :: CARDS(LEFT_PLAYER,0) > CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER, 0) > CARDS(player_ID, 0) ->
+            // Both are greater, so we'll swap as we're likely holding a smaller number
+            atomic {
+                swap(player_ID, 0, (N_CARDS - 1));
+            }
+            checkHold = 0;
+        :: CARDS(LEFT_PLAYER,0) > CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) < CARDS(player_ID, 0) ->
             // Less than right but greater than left, swap
             atomic {
                 swap(player_ID, 0, (N_CARDS - 1));
             }
             checkHold = 0;
-        :: CARDS(LEFT_PLAYER,0) < CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) < CARDS(player_ID, 0) ->
+        :: CARDS(LEFT_PLAYER,0) < CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) > CARDS(player_ID, 0) ->
             // Greater than right but less than left, hold
             skip;
             checkHold = 0;
