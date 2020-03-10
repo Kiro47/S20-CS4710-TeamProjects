@@ -14,7 +14,7 @@
 
 #define Terminated (np_ == 0)
 
-#define K 4
+#define K 5
 #define PLAYERS  K
 #define N_CARDS 4
 #define SHUFFLE_RATIO 2
@@ -33,7 +33,7 @@ byte cards[PLAYERS * N_CARDS];
 //ltl minPlayers { <> (PLAYERS > 3) }
 // LTL ensuring that all players have the same top card
 // Hardcoded to 4 players currently
-ltl winCondition { <> Terminated && (CARDS(0,0) == CARDS(1,0) && CARDS(1,0) == CARDS(2,0) && CARDS(2,0) == CARDS(3,0))}
+ltl winCondition { <> Terminated && (CARDS(0,0) == CARDS(1,0) && CARDS(1,0) == CARDS(2,0) && CARDS(2,0) == CARDS(3,0) && CARDS(3,0) == CARDS(4,0))}
 
 // Swap two card indicies of the players
 inline swap(player,first_card, second_card) {
@@ -94,6 +94,7 @@ proctype Player(int player_ID){
     // Perform decision making stuff
     do
     // If we have held due to both sides being the same for N_CARDS turns, we assume win conditions
+    // Each "Rule" is atomic, whether by atomic blokc or just a single assignment statement
     :: checkHold < (N_CARDS + 1) ->
         if
         :: CARDS(LEFT_PLAYER, 0) == CARDS(player_ID, 0) &&
