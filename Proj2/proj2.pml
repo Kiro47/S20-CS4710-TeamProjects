@@ -68,7 +68,7 @@ proctype Player(int player_ID){
     printf("player ID %d\n", player_ID);
 
     // Get and print left player's card
-    byte LEFT_PLAYER_CARD = -1;
+    int LEFT_PLAYER_CARD = -1;
     if
     :: (player_ID == 0) -> LEFT_PLAYER_CARD = CARDS((PLAYERS - 1), 0); // Edge case for wrap around
     :: else -> LEFT_PLAYER_CARD = CARDS((player_ID -1), 0);
@@ -76,7 +76,7 @@ proctype Player(int player_ID){
     printf("Player(%d): left card: %d\n",player_ID, LEFT_PLAYER_CARD );
 
     // Get and print right players card
-    byte RIGHT_PLAYER_CARD = -1;
+    int RIGHT_PLAYER_CARD = -1;
     if
     :: (player_ID == (PLAYERS-1)) -> RIGHT_PLAYER_CARD = CARDS(0, 0);
     :: else -> RIGHT_PLAYER_CARD = CARDS((player_ID + 1), 0);
