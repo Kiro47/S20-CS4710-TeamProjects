@@ -17,7 +17,7 @@
 #define K 4
 #define PLAYERS  K
 #define N_CARDS 4
-#define SHUFFLE_CHANCE 50 // 50% chance to shuffle
+#define SHUFFLE_RATIO 2
 
 //ltl term { <> Terminated }
 ltl minPlayers { <> (PLAYERS > 3) }
@@ -93,15 +93,15 @@ proctype Owner() {
     byte selected;
 
     /*
-    Selects pick the % chance to perform a shuffle
-    up to a maximum of number of shuffles 127 (max byte size)
+    Previously did select on % chance, but this made modeling
+    incredibly difficult as select very rarely chose above 5.
     */
-    select(selected: 1..100);
+    select(selected: 1 .. SHUFFLE_RATIO);
 
-    if
-    :: shuffles < 127 -> // As long as we haven't hit max number of shuffles
+    do
+    :: shuffles < 30 -> // Specified 30 for search depth reduction
         if
-        :: selected >= SHUFFLE_CHANCE ->
+        :: selected >= SHUFFLE_RATIO -> // Only shuffle if tails
             // Shuffle the decks
             atomic{shuffleDecks();}
             // Increment counter for finiteness
@@ -109,7 +109,8 @@ proctype Owner() {
             select(selected: 1..100);
         :: else -> select(selected: 1..100);
         fi
-    fi
+    :: else -> break;
+    od
 }
 
 init {
