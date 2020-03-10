@@ -67,24 +67,56 @@ proctype Player(int player_ID){
     // Print player ID
     printf("player ID %d\n", player_ID);
 
-    // Get and print left player's card
-    int LEFT_PLAYER_CARD = -1;
-    if
-    :: (player_ID == 0) -> LEFT_PLAYER_CARD = CARDS((PLAYERS - 1), 0); // Edge case for wrap around
-    :: else -> LEFT_PLAYER_CARD = CARDS((player_ID -1), 0);
-    fi
-    printf("Player(%d): left card: %d\n",player_ID, LEFT_PLAYER_CARD );
+    // Assign hold check
+    byte checkHold = 0;
 
-    // Get and print right players card
-    int RIGHT_PLAYER_CARD = -1;
+    // Get left player ID
+    int LEFT_PLAYER = -1;
     if
-    :: (player_ID == (PLAYERS-1)) -> RIGHT_PLAYER_CARD = CARDS(0, 0);
-    :: else -> RIGHT_PLAYER_CARD = CARDS((player_ID + 1), 0);
+    :: (player_ID == 0) -> LEFT_PLAYER = (PLAYERS - 1); // Edge case wrap
+    :: else -> LEFT_PLAYER = (player_ID -1);
     fi
-    printf("Player(%d): right card: %d\n",player_ID, RIGHT_PLAYER_CARD );
+    printf("Player(%d): left player: %d\n",player_ID, LEFT_PLAYER );
+
+    // Get right player ID
+    int RIGHT_PLAYER = -1;
+    if
+    :: (player_ID == (PLAYERS-1)) -> RIGHT_PLAYER = 0; // Edge case wrap
+    :: else -> RIGHT_PLAYER = (player_ID + 1);
+    fi
+    printf("Player(%d): right player: %d\n",player_ID, RIGHT_PLAYER );
 
     // Perform decision making stuff
+    do
+    // If we have held due to both sides being the same for N_CARDS turns, we assume win conditions
+    :: checkHold < (N_CARDS + 1) ->
+        if
+        :: CARDS(LEFT_PLAYER, 0) == CARDS(player_ID, 0) &&
+           CARDS(RIGHT_PLAYER,0) == CARDS(player_ID, 0) ->
+               // hold, aka do nothing, but increment
+               checkHold = checkHold + 1
+               skip;
+        :: CARDS(LEFT_PLAYER,0) < CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER, 0) < CARDS(player_ID, 0) ->
+            // Both are lesser, so we'll swap as we're likely holding a large number
+            atomic {
+                swap(player_ID, 0, (N_CARDS - 1));
+            }
+            checkHold = 0;
+        :: CARDS(LEFT_PLAYER,0) > CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) > CARDS(player_ID, 0) ->
+            // Less than right but greater than left, swap
+            atomic {
+                swap(player_ID, 0, (N_CARDS - 1));
+            }
+            checkHold = 0;
+        :: CARDS(LEFT_PLAYER,0) < CARDS(player_ID, 0) && CARDS(RIGHT_PLAYER,0) < CARDS(player_ID, 0) ->
+            // Greater than right but less than left, hold
+            skip;
+            checkHold = 0;
+        fi
+    :: else -> break;
+    od
 
+    printf("Player(%d): ends game with top card: %d", player_ID, CARDS(player_ID, 0));
 }
 
 proctype Owner() {
