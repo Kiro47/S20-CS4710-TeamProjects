@@ -19,16 +19,21 @@
 #define N_CARDS 4
 #define SHUFFLE_RATIO 2
 
-//ltl term { <> Terminated }
-ltl minPlayers { <> (PLAYERS > 3) }
-
-
 // Cards "2d" array
 // https://stackoverflow.com/questions/58744199/all-possible-knight-moving-on-a-chessboard-in-promela
 // Each Player owns cards[(player * N_CARDS) - ((player * N_CARDS) + N_CARDS)]
 byte cards[PLAYERS * N_CARDS];
 #define CARDS(player, card_index) cards[(player) * N_CARDS + (card_index)]
 #define IS_VALID_CARD(player, card_index) ((player) >= 0 && (card_index) >= 0 && (player) < PLAYERS && (card_index) < N_CARDS)
+
+
+// LTL for eventually the game ends
+//ltl term { <> Terminated }
+// LTL for eventually there are 4 or more players
+//ltl minPlayers { <> (PLAYERS > 3) }
+// LTL ensuring that all players have the same top card
+// Hardcoded to 4 players currently
+ltl winCondition { <> Terminated && (CARDS(0,0) == CARDS(1,0) && CARDS(1,0) == CARDS(2,0) && CARDS(2,0) == CARDS(3,0))}
 
 // Swap two card indicies of the players
 inline swap(player,first_card, second_card) {
