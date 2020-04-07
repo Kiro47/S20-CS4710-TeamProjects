@@ -42,15 +42,7 @@ fact studentsAreTakingClasses {
 	some class:Class, student:Student | student.takes = class
 }
 
-fact unifyStudentTakingClassTakenbyRelation {
-	// TODO: "works" but only giving us one student
-	all student:Student, class:Class | class.takenBy = student
-}
 
-fact noEmptyTimeSlots {
-	// TODO:  Only gives one time
-	all time:Time, class:Class | class.happens = time
-}
 
 /* Predicates */
 pred show {}
