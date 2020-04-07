@@ -26,11 +26,11 @@ sig Professor {
 
 
 /* Facts */
-/*
+
 fact timeToClass {
 	some time:Time, class:Class | class.happens = time
 }
-*/
+
 
 //fact
 
@@ -43,9 +43,14 @@ fact studentsAreTakingClasses {
 }
 
 fact unifyStudentTakingClassTakenbyRelation {
+/*
+TODO: Once this is in proper working order, a very
+similar relation can happen for prof to classes
+*/
 	// TODO: "works" but only giving us one student
 	all student:Student, class:Class | class.takenBy = student
 }
+
 
 fact noEmptyTimeSlots {
 	// TODO:  Only gives one time
