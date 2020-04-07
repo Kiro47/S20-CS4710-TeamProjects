@@ -8,8 +8,8 @@ lone sig eightToNine, nineToTen, tenToEleven,
 
 sig Class {
 	happens: one Time,
-	taughtBy: one Professor,
-	takenBy: some Student
+	taughtBy: Professor,
+	takenBy: Student
 }
 
 sig Student {
