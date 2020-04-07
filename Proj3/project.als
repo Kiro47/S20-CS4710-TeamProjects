@@ -1,15 +1,19 @@
-// Project 
+// Project
 
-abstract sig Time {}
 
-lone sig eightToNine, nineToTen, tenToEleven, 
+/* Signatures */
+abstract sig Time {
+	event: set Class
+}
+
+lone sig eightToNine, nineToTen, tenToEleven,
 	elevenToTwelve, twelveToOne, oneToTwo, twoToThree,
 	threeToFour, fourToFive, fiveToSix extends Time {}
 
 sig Class {
-	happens: one Time,
-	taughtBy: Professor,
-	takenBy: Student
+	happens: some Time,
+	taughtBy: some Professor,
+	takenBy: some Student
 }
 
 sig Student {
@@ -21,8 +25,36 @@ sig Professor {
 }
 
 
+/* Facts */
+/*
+fact timeToClass {
+	some time:Time, class:Class | class.happens = time
+}
+*/
 
+//fact
 
+fact classesHaveAtLeastOneTimeOccurence {
+	some time:Time, class:Class | class.happens = time
+}
+
+fact studentsAreTakingClasses {
+	some class:Class, student:Student | student.takes = class
+}
+
+fact unifyStudentTakingClassTakenbyRelation {
+	// TODO: "works" but only giving us one student
+	all student:Student, class:Class | class.takenBy = student
+}
+
+fact noEmptyTimeSlots {
+	// TODO:  Only gives one time
+	all time:Time, class:Class | class.happens = time
+}
+
+/* Predicates */
 pred show {}
+
+
 
 run show
