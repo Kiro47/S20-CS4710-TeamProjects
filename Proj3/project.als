@@ -42,20 +42,18 @@ fact studentsAreTakingClasses {
 	some class:Class, student:Student | student.takes = class
 }
 
+// Relation: class is taken by students
 fact unifyStudentTakingClassTakenbyRelation {
-/*
-TODO: Once this is in proper working order, a very
-similar relation can happen for prof to classes
-*/
-	// TODO: "works" but only giving us one student
-	all student:Student, class:Class | class.takenBy = student
+	all student:Student, class:Class |
+		student in class.takenBy
+}
+
+fact unifyProfessorTeachingClassTakenbyRelation {
+	all professor:Professor, class:Class |
+		professor in class.taughtBy
 }
 
 
-fact noEmptyTimeSlots {
-	// TODO:  Only gives one time
-	all time:Time, class:Class | class.happens = time
-}
 
 /* Predicates */
 pred show {}
