@@ -12,7 +12,7 @@ lone sig eightToNine, nineToTen, tenToEleven,
 
 sig Class {
 	happens: some Time,
-	taughtBy: some Professor,
+	taughtBy: one Professor,
 	takenBy: some Student
 }
 
@@ -36,7 +36,6 @@ fun getProfessorStudents (professor:Professor): set Student {
 /* Facts */
 
 
-
 // Class happens at least once in some timeslot.
 // There is at least one class
 fact classesHaveAtLeastOneTimeOccurence {
@@ -49,38 +48,27 @@ fact studentsAreTakingClasses {
 
 // Relation: class is taken by students, and the
 // 			 inverse relation pairs
-fact unifyStudentTakingClassTakenbyRelation {
-	all student:Student, class:Class |
-		student in class.takenBy
-}
 
-fact unifyClassTakenByStudentTakesRelation {
-	all class:Class, student:Student|
-		class in student.takes
+fact unifyStudentTakingClassTakenbyRelation {
+    all student:Student, class:Class |
+        (student in class.takenBy) <=> (class in student.takes)
 }
 
 // Relation: class is taught by at least one professor,
 //			 and the inverse relation pairs
 fact unifyProfessorTeachingClassTakenbyRelation {
-	all professor:Professor, class:Class |
-		professor in class.taughtBy
-}
-fact unifyClassTakenByProfessorTeachingRelation {
-	all class:Class, professor:Professor |
-		class in professor.teaches
+    all professor:Professor, class:Class |
+        (professor in class.taughtBy) <=> (class in professor.teaches)
 }
 
 // Relation: class is taught by at least one professor,
 //			 and the inverse relation pairs
 fact unifyClassHappensTimeEventRelation {
-	all class:Class, time:Time |
-		class in time.event
+    all class:Class, time:Time |
+        (class in time.event) <=> (time in class.happens)
 }
 
-fact unifyTimeEventClassHappensRelation {
-	all time:Time, class:Class |
-		time in class.happens
-}
+
 /* Assertions */
 assert studentsHaveProfessors {
 	all student:Student |
@@ -99,7 +87,8 @@ assert noStudentsWithoutClasses {
 
 /* Predicates */
 pred show {
-
+	#Professor > 2
+	#Time > 1
 }
 
 // Many being 5 in our case
@@ -112,4 +101,4 @@ pred multipleClasses (classes:Class) {
 }
 
 //run multipleClasses
-run classesWithManyStudents for 5 Class, 10 Student, 3 Professor, 4 Time
+run show for 5 Class, 10 Student, 3 Professor, 4 Time
