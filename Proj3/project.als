@@ -81,6 +81,15 @@ fact unifyTimeEventClassHappensRelation {
 	all time:Time, class:Class |
 		time in class.happens
 }
+/* Assertions */
+assert studentsHaveProfessors {
+	all student:Student |
+		some #student.takes.taughtBy
+}
+assert professorsHaveClassTime {
+	all professor:Professor |
+		some #professor.teaches.happens
+}
 
 
 /* Predicates */
