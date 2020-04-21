@@ -94,6 +94,17 @@ assert professorsHaveClassTime {
 
 /* Predicates */
 pred show {
+
 }
 
-run show for 12 Class, 10 Student, 6 Professor
+// Many being 5 in our case
+pred classesWithManyStudents (class:Class) {
+	#class.takenBy >= 5
+}
+
+pred multipleClasses (classes:Class) {
+	#classes.happens > 1
+}
+
+//run multipleClasses
+run classesWithManyStudents for 5 Class, 10 Student, 3 Professor, 4 Time
