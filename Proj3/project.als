@@ -78,7 +78,6 @@ fact profesorClassOverlap {
 		no (professor.teaches - class).happens & class.happens
 }
 
-
 /* Assertions */
 assert studentsHaveProfessors {
 	all student:Student |
@@ -93,6 +92,15 @@ assert professorsHaveClassTime {
 assert noStudentsWithoutClasses {
 	all student:Student |
 		no #student.takes
+}
+
+assert noStudentWithConflictingTimeslots {
+	all student:Student, class:student.takes |
+		some (student.takes - class).happens & class.happens
+}
+assert noProfessortWithConflictingTimeslots {
+	all professor:Professor, class:professor.teaches |
+		some (professor.teaches - class).happens & class.happens
 }
 
 /* Predicates */
