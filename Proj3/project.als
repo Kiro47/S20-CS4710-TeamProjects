@@ -24,8 +24,18 @@ sig Professor {
 	teaches: some Class
 }
 
+/* Functions */
+fun getStudentProfessors (student:Student): set Professor {
+	student.takes.*taughtBy
+}
+
+fun getProfessorStudents (professor:Professor): set Student {
+	professor.teaches.*takenBy
+}
 
 /* Facts */
+
+
 
 // Class happens at least once in some timeslot.
 // There is at least one class
