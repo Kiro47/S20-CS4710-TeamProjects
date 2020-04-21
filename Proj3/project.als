@@ -86,11 +86,16 @@ assert studentsHaveProfessors {
 	all student:Student |
 		some #student.takes.taughtBy
 }
+
 assert professorsHaveClassTime {
 	all professor:Professor |
 		some #professor.teaches.happens
 }
 
+assert noStudentsWithoutClasses {
+	all student:Student |
+		no #student.takes
+}
 
 /* Predicates */
 pred show {
