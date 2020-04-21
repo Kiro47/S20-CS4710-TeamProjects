@@ -1,6 +1,8 @@
 // Project
+module util/boolean
 
-
+// Should be hidden, but can't abstract an enum, unsure how to hide.
+enum  Boolean { True, False }
 /* Signatures */
 abstract sig Time {
 	event: set Class
@@ -31,6 +33,13 @@ fun getStudentProfessors (student:Student): set Professor {
 
 fun getProfessorStudents (professor:Professor): set Student {
 	professor.teaches.*takenBy
+}
+
+// Get timeslots that are free for everyone
+
+fun isFreeTime (time:Time): Boolean {
+	time in Class.happens =>
+		True else False
 }
 
 /* Facts */
@@ -118,5 +127,15 @@ pred multipleClasses (classes:Class) {
 	#classes.happens > 1
 }
 
+pred showBusyTimeSlots () {
+	all time:Time |
+		some (time.event & Class)
+}
+
+pred freeTimeSlots () {
+	all time:Time |
+		isFreeTime[time] != False
+}
+
 //run multipleClasses
-run show for 5 Class, 10 Student, 3 Professor, 4 Time
+run showBusyTimeSlots for 5 Class, 20 Student, 3 Professor, 10 Time
