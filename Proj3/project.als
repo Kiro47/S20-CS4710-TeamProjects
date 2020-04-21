@@ -11,7 +11,7 @@ lone sig eightToNine, nineToTen, tenToEleven,
 	threeToFour, fourToFive, fiveToSix extends Time {}
 
 sig Class {
-	happens: some Time,
+	happens: one Time,
 	taughtBy: one Professor,
 	takenBy: some Student
 }
@@ -66,6 +66,16 @@ fact unifyProfessorTeachingClassTakenbyRelation {
 fact unifyClassHappensTimeEventRelation {
     all class:Class, time:Time |
         (class in time.event) <=> (time in class.happens)
+}
+
+fact studentClassOverlap {
+	all student:Student, class:student.takes |
+		no (student.takes - class).happens & class.happens
+}
+
+fact profesorClassOverlap {
+	all professor:Professor, class:professor.teaches |
+		no (professor.teaches - class).happens & class.happens
 }
 
 
