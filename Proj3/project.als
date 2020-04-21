@@ -42,17 +42,21 @@ fun isFreeTime (time:Time): Boolean {
 		True else False
 }
 
+fun getUsedTimeSlots(class:Class): Time {
+	class.happens
+}
+
 /* Facts */
 
 
 // Class happens at least once in some timeslot.
 // There is at least one class
 fact classesHaveAtLeastOneTimeOccurence {
-	some time:Time, class:Class | class.happens = time
+	some class:Class, time:Time | class.happens = time
 }
 
 fact studentsAreTakingClasses {
-	some class:Class, student:Student | student.takes = class
+	some student:Student,  class:Class | student.takes = class
 }
 
 // Relation: class is taken by students, and the
@@ -116,6 +120,7 @@ assert noProfessortWithConflictingTimeslots {
 pred show {
 	#Professor > 2
 	#Time > 1
+	#Time.event > 0
 }
 
 // Many being 5 in our case
@@ -138,4 +143,4 @@ pred freeTimeSlots () {
 }
 
 //run multipleClasses
-run showBusyTimeSlots for 5 Class, 20 Student, 3 Professor, 10 Time
+run show for 5 Class, 20 Student, 3 Professor, 10 Time
